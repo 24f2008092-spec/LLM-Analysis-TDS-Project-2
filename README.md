@@ -128,13 +128,12 @@ Copy code
 
 ---
 
-### Step 1 — Clone the Repository
-
+#Step 1 — Clone the Repository
 ```bash
 git clone https://github.com/<your-username>/<your-repo>.git
 cd <your-repo>
-Step 2 — Install Dependencies
-Option A — Using uv (Recommended)
+#Step 2 — Install Dependencies
+#Option A — Using uv (Recommended)
 bash
 Copy code
 pip install uv
@@ -145,7 +144,7 @@ Start server:
 bash
 Copy code
 uv run main.py
-Option B — Using pip
+#Option B — Using pip
 bash
 Copy code
 python -m venv venv
@@ -154,15 +153,15 @@ venv\Scripts\activate  # Windows
 
 pip install -e .
 playwright install chromium
-⚙️ Configuration
-Create a .env file:
+#⚙️ Configuration
+#Create a .env file:
 
 ini
 Copy code
 EMAIL=24f2008092@ds.study.iitm.ac.in
 SECRET=<your_secret_here>
 GOOGLE_API_KEY=<your_gemini_api_key_here>
-🚀 Usage
+#🚀 Usage
 Start the server:
 
 bash
@@ -190,14 +189,14 @@ Response:
 json
 Copy code
 { "status": "ok" }
-🌐 API Endpoints
+#🌐 API Endpoints
 POST /solve
 Triggers the entire quiz-solving process.
 
 GET /healthz
 Basic health-check.
 
-🛠 Tools & Capabilities
+#🛠 Tools & Capabilities
 1. Web Scraper (get_rendered_html)
 Full JS rendering via Playwright
 
@@ -215,7 +214,7 @@ Submits answers to quiz endpoints.
 5. Dependency Installer (add_dependencies)
 Automatically installs missing libraries.
 
-🐳 Docker Deployment
+#🐳 Docker Deployment
 Build
 bash
 Copy code
