@@ -14,77 +14,96 @@ app_port: 7860
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.121.3+-green.svg)](https://fastapi.tiangolo.com/)
 
-This repository contains my implementation for the **TDS Project – LLM Analysis Quiz Solver**.  
-The system is an autonomous agent capable of solving multi-step quiz tasks involving data extraction, transformation, analysis, and submission across dynamically linked quiz pages.
+This repository contains my implementation of the **TDS Project – LLM Analysis Quiz Solver** for the BS in Data Science program at IIT Madras.  
+It is an **autonomous agent** that solves multi-step quiz tasks involving data extraction, processing, analysis, and visualization.
 
-The agent uses a tool-augmented reasoning system powered by LangGraph + LangChain and integrates Google's **Gemini 2.5 Flash** model for decision-making and planning. A FastAPI server exposes the `/solve` endpoint, which IITM uses to trigger the quiz-solving pipeline.
+The agent uses **LangGraph**, **LangChain**, and **Google Gemini 2.5 Flash** to orchestrate tool usage and handle complex reasoning during the quiz.
+
+---
+
+## 📋 Table of Contents
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Features](#features)
+- [Project Structure](#project-structure)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [Usage](#usage)
+- [API Endpoints](#api-endpoints)
+- [Tools & Capabilities](#tools--capabilities)
+- [Docker Deployment](#docker-deployment)
+- [How It Works](#how-it-works)
+- [License](#license)
 
 ---
 
 ## 🔍 Overview
 
-The aim of the project is to build a fully autonomous pipeline that:
+The goal of this project is to build a **fully autonomous pipeline** that can:
 
-- Fetches quiz pages rendered with JavaScript  
-- Downloads files (PDF, CSV, images, text)  
-- Performs data cleaning and processing  
-- Executes Python code dynamically  
-- Generates visualizations if required  
-- Submits answers to the evaluation server  
-- Continues solving subsequent quiz pages until completion  
+- Fetch quiz pages (including JavaScript-rendered pages)
+- Scrape websites & call APIs  
+- Download files: PDFs, CSVs, images  
+- Clean and preprocess data  
+- Perform analysis, statistics, and visualization  
+- Execute dynamically generated Python code  
+- Submit answers automatically  
+- Continue solving multiple quiz pages until completion  
 
-Once a POST request is received, the pipeline runs end-to-end without any human intervention.
+Once the `/solve` endpoint receives a POST request, the entire workflow runs automatically.
 
 ---
 
 ## 🏗️ Architecture
 
-The system is organized as a **LangGraph state machine**, which routes execution between:
+The system is built using a **LangGraph state machine**, which links all components:
 
-- **FastAPI server** – Receives tasks & validates using email + secret  
-- **LLM Agent** – Plans actions through Gemini 2.5 Flash  
-- **Tools** – Perform scraping, downloading, execution, and submission tasks  
-
-### Architecture Diagram
-
-┌────────────────┐
-│ FastAPI Server │ ← /solve endpoint
-└──────┬─────────┘
+┌─────────────┐
+│ FastAPI │ ← Handles POST requests with quiz URLs
+│ Server │
+└──────┬──────┘
+│
 ▼
-┌────────────────┐
-│ LLM Agent │ ← Planning, coordination, reasoning
-│ (LangGraph) │
-└──────┬─────────┘
-▼
-┌────────┬──────────┬──────────┬──────────────┬───────────┐
-│Scraper │Downloader│Code Exec │POST Submitter│Add Deps │
-└────────┴──────────┴──────────┴──────────────┴───────────┘
+┌─────────────┐
+│ Agent │ ← LangGraph orchestrator using Gemini 2.5 Flash
+│ (LLM) │
+└──────┬──────┘
+│
+├────────────┬────────────┬─────────────┬──────────────┐
+▼ ▼ ▼ ▼ ▼
+[Scraper] [Downloader] [Code Exec] [POST Req] [Add Deps]
 
 yaml
 Copy code
+
+### Key Components
+- **FastAPI (`main.py`)** – Validates secrets, receives quiz tasks  
+- **LangGraph Agent (`agent.py`)** – Controls reasoning, planning, and state  
+- **Tools (`tools/` folder)** – Modular actions like scraping, downloading, executing code  
+- **LLM** – Gemini 2.5 Flash with built-in rate limiting
 
 ---
 
 ## ✨ Features
 
-- ✔ Autonomous multi-step quiz solver  
-- ✔ JavaScript rendering using Playwright  
-- ✔ Handles PDFs, CSVs, images, JSON, HTML tables  
-- ✔ Code execution in isolated environment  
-- ✔ Auto-installation of missing Python packages  
-- ✔ Smooth multi-URL quiz progression  
-- ✔ Fully Dockerized and deployable  
-- ✔ Background processing to avoid timeouts  
+- ✅ Autonomous multi-step decision making  
+- ✅ Playwright-based JS rendering  
+- ✅ Python code generation & execution  
+- ✅ Downloads + processes all major file formats  
+- ✅ On-the-fly dependency installation  
+- ✅ Robust retries & error handling  
+- ✅ Docker-ready for HuggingFace/Cloud deployment  
+- ✅ Respects Gemini API rate limits  
 
 ---
 
 ## 📁 Project Structure
 
 LLM-Analysis-TDS-Project-2/
-├── agent.py # LangGraph logic
-├── main.py # FastAPI server
-├── pyproject.toml # Project dependencies
-├── Dockerfile # Docker container setup
+├── agent.py
+├── main.py
+├── pyproject.toml
+├── Dockerfile
 ├── tools/
 │ ├── init.py
 │ ├── web_scraper.py
@@ -101,31 +120,37 @@ Copy code
 
 ## 📦 Installation
 
-### Requirements
+### Prerequisites
 - Python **3.12+**
-- Playwright  
-- uv **or** pip  
-- Git  
+- Playwright
+- `uv` (recommended) or pip
+- Git
 
 ---
 
-### Clone the Repository
+### Step 1 — Clone the Repository
 
 ```bash
 git clone https://github.com/<your-username>/<your-repo>.git
 cd <your-repo>
-Option A — Using uv (recommended)
+Step 2 — Install Dependencies
+Option A — Using uv (Recommended)
 bash
 Copy code
 pip install uv
 uv sync
 uv run playwright install chromium
+Start server:
+
+bash
+Copy code
+uv run main.py
 Option B — Using pip
 bash
 Copy code
 python -m venv venv
-source venv/bin/activate   # macOS / Linux
-venv\Scripts\activate      # Windows
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Linux/Mac
 
 pip install -e .
 playwright install chromium
@@ -136,9 +161,7 @@ ini
 Copy code
 EMAIL=24f2008092@ds.study.iitm.ac.in
 SECRET=<your_secret_here>
-GOOGLE_API_KEY=<your_gemini_api_key>
-Ensure the SECRET matches what you submitted in the Google Form.
-
+GOOGLE_API_KEY=<your_gemini_api_key_here>
 🚀 Usage
 Start the server:
 
@@ -147,66 +170,99 @@ Copy code
 uv run main.py
 # OR
 python main.py
-The server runs at:
+Server runs at:
 
 cpp
 Copy code
 http://0.0.0.0:7860
-Test Endpoint
+Test the Endpoint
 bash
 Copy code
 curl -X POST http://localhost:7860/solve \
   -H "Content-Type: application/json" \
   -d '{
-        "email": "24f2008092@ds.study.iitm.ac.in",
-        "secret": "<your_secret_here>",
-        "url": "https://tds-llm-analysis.s-anand.net/demo"
-      }'
-If secret is correct:
+    "email": "24f2008092@ds.study.iitm.ac.in",
+    "secret": "<your_secret_here>",
+    "url": "https://tds-llm-analysis.s-anand.net/demo"
+  }'
+Response:
 
 json
 Copy code
 { "status": "ok" }
 🌐 API Endpoints
 POST /solve
-Starts autonomous quiz-solving.
+Triggers the entire quiz-solving process.
 
 GET /healthz
-Returns service uptime + status.
+Basic health-check.
 
-🛠 Tools Overview
-1. Web Scraper
-Uses Playwright to render and extract JavaScript-heavy webpages.
+🛠 Tools & Capabilities
+1. Web Scraper (get_rendered_html)
+Full JS rendering via Playwright
 
-2. File Downloader
-Handles PDFs, CSVs, images, ZIPs, text files.
+Extracts HTML content after network idle
 
-3. Python Code Executor
-Executes generated Python scripts for analysis tasks.
+2. File Downloader (download_file)
+Handles PDFs, CSVs, images, zip files, etc.
 
-4. Submit Tool
-POSTs the computed answer to quiz submission endpoint.
+3. Python Code Executor (run_code)
+Safely executes isolated Python code.
 
-5. Add Dependencies
-Dynamically installs missing packages using uv.
+4. POST Request Tool (post_request)
+Submits answers to quiz endpoints.
+
+5. Dependency Installer (add_dependencies)
+Automatically installs missing libraries.
 
 🐳 Docker Deployment
-Build image
+Build
 bash
 Copy code
-docker build -t llm-agent .
-Run container
+docker build -t llm-analysis-agent .
+Run
 bash
 Copy code
 docker run -p 7860:7860 \
   -e EMAIL="24f2008092@ds.study.iitm.ac.in" \
   -e SECRET="<your_secret_here>" \
   -e GOOGLE_API_KEY="<your_api_key>" \
-  llm-agent
+  llm-analysis-agent
+HuggingFace Spaces Deployment
+Create new Space → Select Docker template
+
+Upload repo
+
+Add secrets:
+
+EMAIL
+
+SECRET
+
+GOOGLE_API_KEY
+
+Space builds automatically
+
+🧠 How It Works
+1. Request Reception
+Validate secret
+
+Start background task
+
+2. Agent Initialization
+State machine loads tools & LLM.
+
+3. Task Loop
+pgsql
+Copy code
+Analyze → Choose Tool → Execute Tool → Evaluate → Repeat
+4. Completion
+Agent stops when no next quiz URL is found.
+
 📄 License
 This project is licensed under the MIT License.
 
-Author: Amogh Sharma
+Author
+Amogh Sharma
+BS in Data Science (IIT Madras)
 Email: 24f2008092@ds.study.iitm.ac.in
-Institution: IIT Madras
-Course: Tools in Data Science (TDS)
